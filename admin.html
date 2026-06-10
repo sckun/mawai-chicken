@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>店主录入 — Mawai 走地鸡</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; }
+  .header { background: #1a5c3a; color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+  .header h1 { font-size: 18px; }
+  .header .badge { background: #e07b3a; font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 600; }
+  .container { max-width: 480px; margin: 0 auto; padding: 14px; }
+  .section { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .sec-title { font-size: 15px; font-weight: 600; color: #222; margin-bottom: 10px; }
+  .options { display: flex; flex-wrap: wrap; gap: 7px; }
+  .opt { border: 1.5px solid #ddd; border-radius: 7px; padding: 8px 13px; font-size: 15px; cursor: pointer; background: #fff; color: #333; transition: all .12s; line-height: 1.3; }
+  .opt.sel { border-color: #1a5c3a; background: #e8f5ee; color: #1a5c3a; font-weight: 600; }
+  .qty-row { display: flex; align-items: center; gap: 14px; }
+  .qty-btn { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #ddd; background: #fff; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .qty-val { font-size: 26px; font-weight: 600; min-width: 34px; text-align: center; }
+  .chk-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1.5px solid #ddd; border-radius: 7px; cursor: pointer; margin-bottom: 7px; font-size: 15px; background: #fff; user-select: none; }
+  .chk-row.sel { border-color: #e07b3a; background: #FAECE7; color: #7a3010; }
+  .chk-box { width: 20px; height: 20px; border: 1.5px solid #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .chk-row.sel .chk-box { border-color: #e07b3a; background: #e07b3a; color: #fff; }
+  input, textarea, select { font-size: 15px; padding: 9px 12px; border: 1.5px solid #ddd; border-radius: 7px; width: 100%; background: #fff; color: #333; outline: none; }
+  input:focus, textarea:focus, select:focus { border-color: #1a5c3a; }
+  textarea { resize: none; }
+  .source-row { display: flex; gap: 7px; margin-bottom: 0; }
+  .src-opt { flex: 1; text-align: center; border: 1.5px solid #ddd; border-radius: 7px; padding: 9px 6px; font-size: 14px; cursor: pointer; background: #fff; }
+  .src-opt.sel { border-color: #1a5c3a; background: #e8f5ee; color: #1a5c3a; font-weight: 600; }
+  .submit-btn { width: 100%; padding: 14px; font-size: 17px; font-weight: 600; background: #1a5c3a; color: #fff; border: none; border-radius: 10px; cursor: pointer; margin-top: 6px; }
+  .submit-btn:active { background: #0f3d24; }
+  .submit-btn:disabled { background: #aaa; }
+  .info-box { border-radius: 7px; padding: 9px 12px; font-size: 13px; margin-bottom: 8px; line-height: 1.6; }
+  .info-green { background: #e8f5ee; color: #1a5c3a; }
+  .info-blue { background: #E6F1FB; color: #185FA5; }
+  #time-section { display: none; }
+  .success-page { display: none; text-align: center; padding: 30px 20px; }
+  .success-page .icon { font-size: 50px; margin-bottom: 12px; }
+  .success-page h2 { font-size: 20px; color: #1a5c3a; margin-bottom: 8px; }
+  .success-page button { margin-top: 16px; padding: 12px 30px; font-size: 16px; background: #1a5c3a; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
+  .loading { display: none; text-align: center; padding: 8px; font-size: 14px; color: #888; }
+  .back-link { text-align: center; margin-top: 12px; font-size: 13px; }
+  .back-link a { color: #1a5c3a; text-decoration: none; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>🔒 店主录入</h1>
+  </div>
+  <div class="badge">ADMIN</div>
+</div>
+
+<div class="container">
+
+  <div class="success-page" id="successPage">
+    <div class="icon">✅</div>
+    <h2>订单已记录！</h2>
+    <p style="font-size:14px;color:#555">Telegram 通知已发送</p>
+    <button onclick="resetForm()">➕ 录入下一单</button>
+  </div>
+
+  <div id="formArea">
+
+    <!-- 来源 -->
+    <div class="section">
+      <div class="sec-title">订单来源</div>
+      <div class="source-row" id="source-group">
+        <div class="src-opt" onclick="pickSrc(this,'电话')">📞 电话</div>
+        <div class="src-opt" onclick="pickSrc(this,'语音')">🎤 语音</div>
+        <div class="src-opt" onclick="pickSrc(this,'WhatsApp')">💬 WhatsApp</div>
+        <div class="src-opt" onclick="pickSrc(this,'当面')">🏪 当面</div>
+      </div>
+    </div>
+
+    <!-- 顾客电话 -->
+    <div class="section">
+      <div class="sec-title">顾客 WhatsApp 号码</div>
+      <input type="tel" placeholder="012-345 6789" id="phone"/>
+    </div>
+
+    <!-- 顾客名字（可选） -->
+    <div class="section">
+      <div class="sec-title">顾客名字（可不填）</div>
+      <input type="text" placeholder="例：陈太太" id="name"/>
+    </div>
+
+    <!-- 数量 -->
+    <div class="section">
+      <div class="sec-title">数量</div>
+      <div class="qty-row">
+        <button class="qty-btn" onclick="adj(-1)">−</button>
+        <span class="qty-val" id="qty">1</span>
+        <button class="qty-btn" onclick="adj(1)">＋</button>
+        <span style="font-size:14px;color:#888">只</span>
+      </div>
+    </div>
+
+    <!-- 重量 -->
+    <div class="section">
+      <div class="sec-title">重量（净重）</div>
+      <div class="options" id="size-group">
+        <div class="opt" onclick="pick(this,'size','1.6–1.8')">1.6–1.8 kg</div>
+        <div class="opt" onclick="pick(this,'size','1.8–2.0')">1.8–2.0 kg</div>
+        <div class="opt" onclick="pick(this,'size','2.3以上')">2.3 kg 以上</div>
+      </div>
+    </div>
+
+    <!-- 公母 -->
+    <div class="section">
+      <div class="sec-title">公鸡 / 母鸡</div>
+      <div class="options" id="gender-group">
+        <div class="opt" onclick="pick(this,'gender','公鸡')">公鸡</div>
+        <div class="opt" onclick="pick(this,'gender','母鸡')">母鸡</div>
+        <div class="opt" onclick="pick(this,'gender','无所谓')">无所谓</div>
+      </div>
+    </div>
+
+    <!-- 切法 -->
+    <div class="section">
+      <div class="sec-title">切法</div>
+      <div class="options" id="cut-group">
+        <div class="opt" onclick="pick(this,'cut','整只')">整只</div>
+        <div class="opt" onclick="pick(this,'cut','切半')">切半</div>
+        <div class="opt" onclick="pick(this,'cut','切4边')">切4边</div>
+      </div>
+    </div>
+
+    <!-- 取货方式 -->
+    <div class="section">
+      <div class="sec-title">取货方式</div>
+      <div class="options" id="pickup-group">
+        <div class="opt" onclick="pickPickup(this,'档口取货')">来档口<br><span style="font-size:11px;color:#888">拜六&礼拜 7:00–8:30</span></div>
+        <div class="opt" onclick="pickPickup(this,'自取')">自取</div>
+        <div class="opt" onclick="pickPickup(this,'送上门')">送上门</div>
+      </div>
+    </div>
+
+    <!-- 时间 -->
+    <div class="section" id="time-section">
+      <div class="sec-title">取货日期</div>
+      <div id="time-stall">
+        <div class="info-box info-green">🕖 时间固定：7:00 – 8:30</div>
+        <div class="options" id="date-stall-group">
+          <div class="opt" onclick="pick(this,'date-stall','本周六')">本周六</div>
+          <div class="opt" onclick="pick(this,'date-stall','本周日')">本周日</div>
+        </div>
+      </div>
+      <div id="time-home" style="display:none">
+        <div class="options" id="date-home-group">
+          <div class="opt" onclick="pick(this,'date-home','本周六')">本周六</div>
+          <div class="opt" onclick="pick(this,'date-home','本周日')">本周日</div>
+          <div class="opt" onclick="pick(this,'date-home','平日')">平日</div>
+          <div class="opt" onclick="pick(this,'date-home','其他')">其他</div>
+        </div>
+        <div style="margin-top:8px">
+          <input type="text" placeholder="时间（例：下午2点后）" id="prefTime"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- 不要的部位 -->
+    <div class="section">
+      <div class="sec-title">不要的部位</div>
+      <div class="chk-row" id="r1" onclick="toggleChk('r1')"><div class="chk-box" id="r1b"></div>不要鸡头</div>
+      <div class="chk-row" id="r2" onclick="toggleChk('r2')"><div class="chk-box" id="r2b"></div>不要鸡颈</div>
+      <div class="chk-row" id="r3" onclick="toggleChk('r3')"><div class="chk-box" id="r3b"></div>不要鸡屁股</div>
+      <div class="chk-row" id="r4" onclick="toggleChk('r4')"><div class="chk-box" id="r4b"></div>不要内脏（心、肝、胗）</div>
+    </div>
+
+    <!-- 备注 -->
+    <div class="section">
+      <div class="sec-title">备注（可不填）</div>
+      <textarea rows="2" placeholder="特别要求、顾客地址等" id="note"></textarea>
+    </div>
+
+    <div class="loading" id="loading">⏳ 提交中...</div>
+    <button class="submit-btn" id="submitBtn" onclick="submitOrder()">✅ 记录订单</button>
+
+    <div class="back-link"><a href="index.html">← 返回顾客表格</a></div>
+
+  </div>
+</div>
+
+<script>
+const TELEGRAM_TOKEN = '8942053344:AAGhqVsgXpE0enLrQG_T_jN76uFrT0k80YA';
+const TELEGRAM_CHAT_ID = '916738168';
+
+let qty=1, selSize='', selPickup='', selSource='';
+const sel={}, chk={r1:false,r2:false,r3:false,r4:false};
+
+function adj(d){ qty=Math.max(1,qty+d); document.getElementById('qty').textContent=qty; }
+
+function pick(el,group,val){
+  document.querySelectorAll('#'+group+'-group .opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel'); sel[group]=val;
+  if(group==='size') selSize=val;
+}
+
+function pickSrc(el,val){
+  document.querySelectorAll('#source-group .src-opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel'); selSource=val;
+}
+
+function pickPickup(el,val){
+  document.querySelectorAll('#pickup-group .opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel'); selPickup=val;
+  document.getElementById('time-section').style.display='block';
+  document.getElementById('time-stall').style.display=val==='档口取货'?'block':'none';
+  document.getElementById('time-home').style.display=val==='档口取货'?'none':'block';
+}
+
+function toggleChk(id){
+  chk[id]=!chk[id];
+  document.getElementById(id).classList.toggle('sel',chk[id]);
+  document.getElementById(id+'b').textContent=chk[id]?'✓':'';
+}
+
+async function submitOrder(){
+  const phone=document.getElementById('phone').value.trim();
+  const name=document.getElementById('name').value.trim();
+  if(!phone){ alert('请输入顾客号码'); return; }
+  if(!selSize){ alert('请选择重量'); return; }
+  if(!sel['gender']){ alert('请选择公鸡或母鸡'); return; }
+  if(!sel['cut']){ alert('请选择切法'); return; }
+  if(!selPickup){ alert('请选择取货方式'); return; }
+  const date=selPickup==='档口取货'?(sel['date-stall']||''):(sel['date-home']||'');
+  if(!date){ alert('请选择取货日期'); return; }
+
+  const removes=['r1','r2','r3','r4'].filter(r=>chk[r]).map(r=>({'r1':'不要鸡头','r2':'不要鸡颈','r3':'不要鸡屁股','r4':'不要内脏'}[r]));
+  const note=document.getElementById('note').value.trim();
+  const prefTime=document.getElementById('prefTime')?document.getElementById('prefTime').value.trim():'';
+
+  const msg=`🔒 *店主录入订单*
+来源：${selSource||'未注明'}
+━━━━━━━━━━━━━━
+👤 顾客：${name||'未留名'}
+📱 电话：${phone}
+🐔 数量：${qty} 只
+⚖️ 重量：${selSize} kg
+♂♀ 性别：${sel['gender']}
+🔪 切法：${sel['cut']}
+🚗 取货：${selPickup}
+📅 日期：${date}${prefTime?'\n⏰ 时间：'+prefTime:''}
+${removes.length?'❌ 不要：'+removes.join('、'):'✅ 部位：全部都要'}
+${note?'📝 备注：'+note:''}
+━━━━━━━━━━━━━━`;
+
+  document.getElementById('submitBtn').disabled=true;
+  document.getElementById('loading').style.display='block';
+
+  try{
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({chat_id:TELEGRAM_CHAT_ID,text:msg,parse_mode:'Markdown'})
+    });
+    document.getElementById('formArea').style.display='none';
+    document.getElementById('successPage').style.display='block';
+  }catch(e){
+    alert('提交失败，请重试');
+    document.getElementById('submitBtn').disabled=false;
+    document.getElementById('loading').style.display='none';
+  }
+}
+
+function resetForm(){
+  document.getElementById('formArea').style.display='block';
+  document.getElementById('successPage').style.display='none';
+  document.getElementById('submitBtn').disabled=false;
+  document.getElementById('loading').style.display='none';
+  document.getElementById('phone').value='';
+  document.getElementById('name').value='';
+  document.getElementById('note').value='';
+  document.querySelectorAll('.opt.sel,.src-opt.sel').forEach(o=>o.classList.remove('sel'));
+  Object.keys(chk).forEach(k=>{ chk[k]=false; document.getElementById(k).classList.remove('sel'); document.getElementById(k+'b').textContent=''; });
+  qty=1; selSize=''; selPickup=''; selSource='';
+  document.getElementById('qty').textContent='1';
+  document.getElementById('time-section').style.display='none';
+}
+</script>
+</body>
+</html>
