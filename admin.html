@@ -158,31 +158,10 @@ var qty = 1, selSize = '', selPickup = '', selSource = '';
 var sel = {}, chk = {r1:false,r2:false,r3:false,r4:false};
 
 function adj(d){ qty = Math.max(1, qty+d); document.getElementById('qty').textContent = qty; }
-
-function pick(el, group, val){
-  document.querySelectorAll('#'+group+'-group .opt').forEach(function(o){ o.classList.remove('sel'); });
-  el.classList.add('sel'); sel[group] = val;
-  if(group === 'size') selSize = val;
-}
-
-function pickSrc(el, val){
-  document.querySelectorAll('#source-group .src-opt').forEach(function(o){ o.classList.remove('sel'); });
-  el.classList.add('sel'); selSource = val;
-}
-
-function pickPickup(el, val){
-  document.querySelectorAll('#pickup-group .opt').forEach(function(o){ o.classList.remove('sel'); });
-  el.classList.add('sel'); selPickup = val;
-  document.getElementById('time-section').style.display = 'block';
-  document.getElementById('time-stall').style.display = val === '档口取货' ? 'block' : 'none';
-  document.getElementById('time-home').style.display = val === '档口取货' ? 'none' : 'block';
-}
-
-function toggleChk(id){
-  chk[id] = !chk[id];
-  document.getElementById(id).classList.toggle('sel', chk[id]);
-  document.getElementById(id+'b').textContent = chk[id] ? '✓' : '';
-}
+function pick(el, group, val){ document.querySelectorAll('#'+group+'-group .opt').forEach(function(o){ o.classList.remove('sel'); }); el.classList.add('sel'); sel[group] = val; if(group === 'size') selSize = val; }
+function pickSrc(el, val){ document.querySelectorAll('#source-group .src-opt').forEach(function(o){ o.classList.remove('sel'); }); el.classList.add('sel'); selSource = val; }
+function pickPickup(el, val){ document.querySelectorAll('#pickup-group .opt').forEach(function(o){ o.classList.remove('sel'); }); el.classList.add('sel'); selPickup = val; document.getElementById('time-section').style.display = 'block'; document.getElementById('time-stall').style.display = val === '档口取货' ? 'block' : 'none'; document.getElementById('time-home').style.display = val === '档口取货' ? 'none' : 'block'; }
+function toggleChk(id){ chk[id] = !chk[id]; document.getElementById(id).classList.toggle('sel', chk[id]); document.getElementById(id+'b').textContent = chk[id] ? '✓' : ''; }
 
 function submitOrder(){
   var phone = document.getElementById('phone').value.trim();
@@ -194,7 +173,6 @@ function submitOrder(){
   if(!selPickup){ alert('请选择取货方式'); return; }
   var date = selPickup === '档口取货' ? (sel['date-stall'] || '') : (sel['date-home'] || '');
   if(!date){ alert('请选择取货日期'); return; }
-
   var removes = [];
   if(chk.r1) removes.push('不要鸡头');
   if(chk.r2) removes.push('不要鸡颈');
@@ -204,35 +182,17 @@ function submitOrder(){
   var note = document.getElementById('note').value.trim();
   var prefTimeEl = document.getElementById('prefTime');
   var prefTime = prefTimeEl ? prefTimeEl.value.trim() : '';
-
   var priceStr = '';
-  if(selSize === '1.6-1.8'){ var lo=Math.round(1.6*26*qty), hi=Math.round(1.8*26*qty); priceStr='RM '+lo+' – '+hi; }
-  else if(selSize === '1.8-2.0'){ var lo=Math.round(1.8*26*qty), hi=Math.round(2.0*26*qty); priceStr='RM '+lo+' – '+hi; }
+  if(selSize === '1.6-1.8'){ priceStr = 'RM ' + Math.round(1.6*26*qty) + ' – ' + Math.round(1.8*26*qty); }
+  else if(selSize === '1.8-2.0'){ priceStr = 'RM ' + Math.round(1.8*26*qty) + ' – ' + Math.round(2.0*26*qty); }
   else { priceStr = '另议（2.3kg以上）'; }
   var location = selPickup === '档口取货' ? 'Johor Jaya 早市，早上 7:00–8:30' : (selPickup === '自取' ? '我家自取（另议时间）' : '送上门（另议时间地址）');
-
-  var msg = '🔒 *店主录入订单*\n来源：' + (selSource || '未注明') + '\n━━━━━━━━━━━━━━\n👤 顾客：' + (name || '未留名') + '\n📱 电话：' + phone + '\n🐔 数量：' + qty + ' 只\n⚖️ 重量：' + selSize + ' kg\n性别：' + sel['gender'] + '\n🔪 切法：' + sel['cut'] + '\n🚗 取货：' + selPickup + '\n📅 日期：' + date + (prefTime ? '\n⏰ 时间：' + prefTime : '') + '\n部位：' + removeStr + (note ? '\n📝 备注：' + note : '') + '\n━━━━━━━━━━━━━━' +
-    '\n\n📋 *确认单（复制发给顾客）*\n──────────────\n你好！收到你的预订了 🐓\n\n• 数量：' + qty + ' 只\n• 重量：' + selSize + ' kg\n• 性别：' + sel['gender'] + '\n• 切法：' + sel['cut'] + '\n• 部位：' + removeStr + '\n\n💰 预计价格：' + priceStr + '\n（实际以过磅为准）\n\n📍 ' + location + (note ? '\n📝 备注：' + note : '') + '\n\n如有更改请尽早通知，谢谢！\n🐓 Mawai 走地鸡';
-
+  var msg = '🔒 *店主录入订单*\n来源：' + (selSource || '未注明') + '\n━━━━━━━━━━━━━━\n👤 顾客：' + (name || '未留名') + '\n📱 电话：' + phone + '\n🐔 数量：' + qty + ' 只\n⚖️ 重量：' + selSize + ' kg\n性别：' + sel['gender'] + '\n🔪 切法：' + sel['cut'] + '\n🚗 取货：' + selPickup + '\n📅 日期：' + date + (prefTime ? '\n⏰ 时间：' + prefTime : '') + '\n部位：' + removeStr + (note ? '\n📝 备注：' + note : '') + '\n━━━━━━━━━━━━━━' + '\n\n📋 *确认单（复制发给顾客）*\n──────────────\n你好！收到你的预订了 🐓\n\n• 数量：' + qty + ' 只\n• 重量：' + selSize + ' kg\n• 性别：' + sel['gender'] + '\n• 切法：' + sel['cut'] + '\n• 部位：' + removeStr + '\n\n💰 预计价格：' + priceStr + '\n（实际以过磅为准）\n\n📍 ' + location + (note ? '\n📝 备注：' + note : '') + '\n\n如有更改请尽早通知，谢谢！\n🐓 Mawai 走地鸡';
   document.getElementById('submitBtn').disabled = true;
   document.getElementById('loading').style.display = 'block';
-
-  fetch(WORKER_URL, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({message: msg})
-  }).then(function(res){
-    if(res.ok){
-      document.getElementById('formArea').style.display = 'none';
-      document.getElementById('successPage').style.display = 'block';
-    } else {
-      throw new Error('Server error');
-    }
-  }).catch(function(e){
-    alert('提交失败，请重试');
-    document.getElementById('submitBtn').disabled = false;
-    document.getElementById('loading').style.display = 'none';
-  });
+  fetch(WORKER_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({message: msg}) })
+  .then(function(res){ if(res.ok){ document.getElementById('formArea').style.display = 'none'; document.getElementById('successPage').style.display = 'block'; } else { throw new Error('Server error'); } })
+  .catch(function(e){ alert('提交失败，请重试'); document.getElementById('submitBtn').disabled = false; document.getElementById('loading').style.display = 'none'; });
 }
 
 function resetForm(){
