@@ -222,7 +222,17 @@ function submitOrder(){
   var prefTimeEl = document.getElementById('prefTime');
   var prefTime = prefTimeEl ? prefTimeEl.value.trim() : '';
 
-  var msg = '🐓 *新订单！*\n━━━━━━━━━━━━━━\n📱 电话：' + phone + '\n🐔 数量：' + qty + ' 只\n⚖️ 重量：' + selSize + ' kg\n性别：' + sel['gender'] + '\n🔪 切法：' + sel['cut'] + '\n🚗 取货：' + selPickup + '\n📅 日期：' + date + (prefTime ? '\n⏰ 时间：' + prefTime : '') + '\n部位：' + removeStr + (note ? '\n📝 备注：' + note : '') + '\n━━━━━━━━━━━━━━';
+  // 预计价格
+  var priceStr = '';
+  if(selSize === '1.6-1.8'){ var lo=Math.round(1.6*26*qty), hi=Math.round(1.8*26*qty); priceStr='RM '+lo+' – '+hi; }
+  else if(selSize === '1.8-2.0'){ var lo=Math.round(1.8*26*qty), hi=Math.round(2.0*26*qty); priceStr='RM '+lo+' – '+hi; }
+  else { priceStr = '另议（2.3kg以上）'; }
+
+  // 取货地点
+  var location = selPickup === '档口取货' ? 'Johor Jaya 早市，早上 7:00–8:30' : (selPickup === '自取' ? '我家自取（另议时间）' : '送上门（另议时间地址）');
+
+  var msg = '🐓 *新订单！*\n━━━━━━━━━━━━━━\n📱 电话：' + phone + '\n🐔 数量：' + qty + ' 只\n⚖️ 重量：' + selSize + ' kg\n性别：' + sel['gender'] + '\n🔪 切法：' + sel['cut'] + '\n🚗 取货：' + selPickup + '\n📅 日期：' + date + (prefTime ? '\n⏰ 时间：' + prefTime : '') + '\n部位：' + removeStr + (note ? '\n📝 备注：' + note : '') + '\n━━━━━━━━━━━━━━' +
+    '\n\n📋 *确认单（复制发给顾客）*\n──────────────\n你好！收到你的预订了 🐓\n\n• 数量：' + qty + ' 只\n• 重量：' + selSize + ' kg\n• 性别：' + sel['gender'] + '\n• 切法：' + sel['cut'] + '\n• 部位：' + removeStr + '\n\n💰 预计价格：' + priceStr + '\n（实际以过磅为准）\n\n📍 ' + location + (note ? '\n📝 备注：' + note : '') + '\n\n如有更改请尽早通知，谢谢！\n🐓 Mawai 走地鸡';
 
   document.getElementById('submitBtn').disabled = true;
   document.getElementById('loading').style.display = 'block';
